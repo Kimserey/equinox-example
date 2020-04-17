@@ -1,8 +1,5 @@
 module TodoBackend
 
-let Category = "Todos"
-let streamName (id : string) = FsCodec.StreamName.create Category id
-
 module Events =
     type Todo =  { id: int; title: string; completed: bool }
 

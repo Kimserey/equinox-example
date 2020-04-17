@@ -22,6 +22,9 @@ type Startup private () =
             let resolver =
                 Equinox.MemoryStore.Resolver(VolatileStore(), TodoBackend.Events.codec, TodoBackend.Fold.fold, TodoBackend.Fold.initial)
 
+            let streamName id =
+                FsCodec.StreamName.create "Todos" id
+
             TodoBackend.Service(fun id -> Equinox.Stream(Serilog.Log.Logger, resolver.Resolve (streamName id), maxAttempts = 3)))
         |> ignore
 
