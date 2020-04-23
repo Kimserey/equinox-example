@@ -1,4 +1,4 @@
-namespace Todo
+namespace TodoApp
 
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
@@ -6,7 +6,7 @@ open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Equinox.MemoryStore
-open TodoBackend
+open Todo
 open Serilog
 open Microsoft.OpenApi.Models
 
@@ -18,14 +18,14 @@ type Startup private () =
     member this.ConfigureServices(services: IServiceCollection) =
         services.AddControllers() |> ignore
 
-        services.AddSingleton<TodoBackend.Service>(fun sc ->
+        services.AddSingleton<Todo.Service>(fun sc ->
             let resolver =
-                Equinox.MemoryStore.Resolver(VolatileStore(), TodoBackend.Events.codec, TodoBackend.Fold.fold, TodoBackend.Fold.initial)
+                Equinox.MemoryStore.Resolver(VolatileStore(), Todo.Events.codec, Todo.Fold.fold, Todo.Fold.initial)
 
             let streamName id =
                 FsCodec.StreamName.create "Todos" id
 
-            TodoBackend.Service(fun id -> Equinox.Stream(Serilog.Log.Logger, resolver.Resolve (streamName id), maxAttempts = 3)))
+            Todo.Service(fun id -> Equinox.Stream(Serilog.Log.Logger, resolver.Resolve (streamName id), maxAttempts = 3)))
         |> ignore
 
         services.AddSwaggerGen(fun c ->

@@ -1,4 +1,4 @@
-namespace Todo
+namespace TodoApp
 
 open System
 open System.Collections.Generic

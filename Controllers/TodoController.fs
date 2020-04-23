@@ -1,8 +1,8 @@
-﻿namespace Todo.Controllers
+﻿namespace TodoApp.Controllers
 
 open System
 open Microsoft.AspNetCore.Mvc
-open TodoBackend
+open Todo
 
 [<CLIMutable>]
 type TodoDto = { id: int; title: string; completed: bool }

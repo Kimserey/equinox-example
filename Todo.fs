@@ -1,17 +1,17 @@
-module TodoBackend
+module Todo
 
 module Events =
-    type Todo =  { id: int; title: string; completed: bool }
+    type TodoData =  { id: int; title: string; completed: bool }
 
     type Event =
-        | Added         of Todo
-        | Updated       of Todo
+        | Added         of TodoData
+        | Updated       of TodoData
         interface TypeShape.UnionContract.IUnionContract
 
     let codec = FsCodec.NewtonsoftJson.Codec.Create<Event>()
 
 module Fold =
-    type State = { items : Events.Todo list; nextId : int }
+    type State = { items : Events.TodoData list; nextId : int }
 
     let initial = { items = []; nextId = 0 }
 
@@ -32,8 +32,8 @@ module Fold =
         Seq.fold evolve
 
 type Command =
-    | Add of Events.Todo
-    | Update of Events.Todo
+    | Add of Events.TodoData
+    | Update of Events.TodoData
 
 let interpret c (state : Fold.State) =
     match c with
@@ -51,17 +51,17 @@ type Service (resolve : string -> Equinox.Stream<Events.Event, Fold.State>) =
         let stream = resolve clientId
         stream.Transact(fun state ->
             let events = interpret command state
-            let state' = Fold.fold state events
-            state'.items,events)
+            let newState = Fold.fold state events
+            newState.items,events)
 
-    member __.List(clientId) : Async<Events.Todo seq> =
+    member __.List(clientId) : Async<Events.TodoData seq> =
         let stream = resolve clientId
         stream.Query (fun s -> s.items |> Seq.ofList)
 
-    member __.Create(clientId, template: Events.Todo) : Async<Events.Todo> = async {
-        let! state' = handle clientId (Command.Add template)
-        return List.head state' }
+    member __.Create(clientId, template: Events.TodoData) : Async<Events.TodoData> = async {
+        let! newState = handle clientId (Command.Add template)
+        return List.head newState }
 
-    member __.Patch(clientId, item: Events.Todo) : Async<Events.Todo> = async {
-        let! state' = handle clientId (Command.Update item)
-        return List.find (fun x -> x.id = item.id) state' }
+    member __.Patch(clientId, item: Events.TodoData) : Async<Events.TodoData> = async {
+        let! newState = handle clientId (Command.Update item)
+        return List.find (fun x -> x.id = item.id) newState }
